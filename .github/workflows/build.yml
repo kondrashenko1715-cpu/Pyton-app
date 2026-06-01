@@ -45,6 +45,12 @@ jobs:
         run: find . -name "*.apk" -exec cp {} ./game.apk \;
 
       # ШАГ 2: Выгружаем этот файл из корня для скачивания
+      # Ищем APK по ВСЕМУ серверу (начиная от корня /) и принудительно копируем в корень проекта
+      - name: Copy Ready APK
+        run: |
+          sudo find / -name "*.apk" -exec cp {} ./game.apk \; 2>/dev/null
+          ls -la ./game.apk || echo "Файл не найден"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
