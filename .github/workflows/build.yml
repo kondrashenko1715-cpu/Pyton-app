@@ -16,14 +16,22 @@ jobs:
         with:
           python-version: '3.10'
 
-      # Устанавливаем системные библиотеки
+      # Шаг 1: Установка системных утилит и фиксированных версий сборщиков
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
           pip install --user --upgrade buildozer "cython<3.0.0" virtualenv
 
-      # Кэширование для ускорения
+      # Шаг 2: Принятие лицензий через встроенный в GitHub Actions Android SDK
+      - name: Accept Pre-installed Android SDK Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          # Используем встроенный sdkmanager по его точному системному пути на GitHub
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      # Шаг 3: Быстрое кэширование сборщика
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
@@ -34,15 +42,7 @@ jobs:
           restore-keys: |
             buildozer-ubuntu-
 
-      # ИСПРАВЛЕНИЕ: Автоматическое принятие лицензий Android SDK перед сборкой
-      - name: Accept Android SDK Licenses
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          # Скачиваем официальный инструмент принятия лицензий и соглашаемся со всеми пунктами
-          yes | sdkmanager --licenses || true
-
-      # Сборка приложения
+      # Шаг 4: Очистка старых логов и компиляция APK файла
       - name: Build with Buildozer
         run: |
           cd test_app
@@ -50,7 +50,7 @@ jobs:
           buildozer android clean
           yes | buildozer android debug
 
-      # Скачивание готового файла APK
+      # Шаг 5: Выгрузка готового APK для скачивания
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
