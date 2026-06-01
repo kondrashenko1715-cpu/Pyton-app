@@ -17,20 +17,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Возвращаем самую стабильную версию Python для мобильной сборки
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # Расширенный список системных зависимостей (включая библиотеки для SDL2 и компиляции Python)
+      # Устанавливаем системные зависимости
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0.0" virtualenv
 
-      # Кэширование для сохранения скачанных файлов Google
+      # Кэширование
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
@@ -41,7 +40,7 @@ jobs:
           restore-keys: |
             buildozer-ubuntu-
 
-      # Сборка
+      # Сборка с принудительным сбросом старого кэша внутри папки проекта
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
@@ -51,9 +50,11 @@ jobs:
           echo "Проект найден в: $SPEC_DIR"
           cd "$SPEC_DIR"
           
+          # Очищаем временные файлы сборки, чтобы убрать прошлые ошибки компиляции
+          buildozer android clean
           yes | buildozer android debug
 
-      # Сохранение файла APK
+      # Сохранение готового APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
