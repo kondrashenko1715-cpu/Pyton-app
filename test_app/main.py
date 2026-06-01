@@ -3,8 +3,12 @@ import random
 
 # Инициализация
 pygame.init()
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-WIDTH, HEIGHT = screen.get_size()
+
+# ИСПРАВЛЕНИЕ ДЛЯ ANDROID: Сначала получаем инфо об экране, потом создаем окно
+info = pygame.display.Info()
+WIDTH, HEIGHT = info.current_w, info.current_h
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
 pygame.display.set_caption("Minecraft Mobile (Thin Bedrock)")
 clock = pygame.time.Clock()
 
@@ -90,3 +94,4 @@ while running:
     clock.tick(30)
 
 pygame.quit()
+ 
