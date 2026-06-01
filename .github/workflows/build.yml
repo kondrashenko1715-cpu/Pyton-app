@@ -22,20 +22,19 @@ jobs:
         with:
           python-version: '3.10'
 
-      # Устанавливаем зависимости и системный aidl, чтобы сборка не падала на 2-й минуте
+      # Устанавливаем системный 'aidl' прямо в Linux!
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev aidl
           pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
 
-      # Исправляем пути для sdkmanager, чтобы Buildozer его увидел
+      # Подменяем sdkmanager, чтобы Buildozer не ругался
       - name: Fix Android SDK Paths for Buildozer
         run: |
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin/
           ln -s $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
 
-      # Запуск сборки игры
       - name: Build with Buildozer
         run: |
           cd test_app
@@ -45,9 +44,9 @@ jobs:
           
           buildozer android debug
 
-      # ТО САМОЕ ИСПРАВЛЕНИЕ: Мы ищем любой созданный APK-файл на сервере и принудительно отдаем его вам!
+      # Универсальный поиск: вытащит APK из абсолютно любой папки репозитория!
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: "**/bin/*.apk"
+          path: "**/*.apk"
