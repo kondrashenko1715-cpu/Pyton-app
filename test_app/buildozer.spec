@@ -6,8 +6,8 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# ВАЖНО: Заменили kivy на pygame_bootstrap
-requirements = python3, pygame_bootstrap
+# ВАЖНО: Указали чистый pygame вместо bootstrap для стабильной сборки
+requirements = python3, pygame
 
 orientation = landscape
 fullscreen = 1
