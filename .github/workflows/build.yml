@@ -22,36 +22,29 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Устанавливаем актуальные версии инструментов без искусственных ограничений
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
           pip install --user --upgrade buildozer cython virtualenv
 
-      # Кэширование для ускорения повторных запусков
-      - name: Cache Buildozer
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.buildozer
-            .buildozer
-          key: buildozer-ubuntu-${{ github.sha }}
-          restore-keys: |
-            buildozer-ubuntu-
-
-      # Сборка приложения с автоматическим принятием лицензий
+      # Умный запуск сборки: скрипт сам найдет, в какой папке лежит buildozer.spec, зайдет туда и соберет APK
       - name: Build with Buildozer
         run: |
-          cd test_app
           export PATH=$PATH:$HOME/.local/bin
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
-          buildozer android clean
+          
+          # Находим папку с файлом buildozer.spec
+          SPEC_DIR=$(dirname $(find . -name "buildozer.spec" | head -n 1))
+          echo "Файлы игры найдены в папке: $SPEC_DIR"
+          cd "$SPEC_DIR"
+          
+          # Запускаем чистую сборку без лишних флагов очистки
           yes | buildozer android debug
 
-      # Выгрузка готового APK файла в артефакты GitHub
+      # Умный поиск готового APK для отправки вам
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: test_app/bin/*.apk
+          path: "**/bin/*.apk"
