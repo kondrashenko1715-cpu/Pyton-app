@@ -11,36 +11,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Возвращаем стабильную Java 17
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      # Официальный экшен для сборки приложений на Kivy/Pygame
+      - name: Build APK with Buildozer Action
+        uses: kivy/buildozer-action@v1
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          command: buildozer android debug
+          repository_root: test_app
 
-      # Возвращаем стабильный Python 3.10
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
-          pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
-
-      - name: Build with Buildozer
-        run: |
-          cd test_app
-          export PATH=$PATH:$HOME/.local/bin
-          export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
-          export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
-          
-          # Очищаем всё старое и запускаем чистую компиляцию
-          buildozer android clean
-          buildozer android debug || (echo "=== ТОЧНАЯ ПРИЧИНА ПАДЕНИЯ ===" && cat .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || tail -n 100 ~/.buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || tail -n 100 .buildozer_log 2>/dev/null)
-
+      # Универсальный сборщик заберет готовый файл
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
