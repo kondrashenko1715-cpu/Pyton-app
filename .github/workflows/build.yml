@@ -39,10 +39,11 @@ jobs:
           
           # Запуск сборки. Если упадет — команда после || распечатает скрытый лог ошибки!
           buildozer android debug || (echo "=== КРИТИЧЕСКИЙ ЛОГ ОШИБКИ ===" && tail -n 150 .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || tail -n 150 ~/.buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || true)
-
-      # Универсальный поиск заберет готовый APK из любой папки
+      # Универсальный поиск заберет готовый APK из любой папки 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: "**/*.apk"
+          path: "test_app/*.apk"
+
+
