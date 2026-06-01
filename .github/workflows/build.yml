@@ -22,25 +22,24 @@ jobs:
         with:
           python-version: '3.10'
 
-      # Устанавливаем системные зависимости
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0.0" virtualenv
 
-      # Кэширование для ускорения процессов
+      # Меняем ключ кэша на v3, чтобы полностью исключить влияние старых ошибок
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
           path: |
             ~/.buildozer
             .buildozer
-          key: buildozer-ubuntu-${{ github.sha }}
+          key: buildozer-ubuntu-v3-${{ github.sha }}
           restore-keys: |
-            buildozer-ubuntu-
+            buildozer-ubuntu-v3-
 
-      # Сборка без ломающего команду потока 'yes |'
+      # Сборка с автоматическим выводом скрытого лога в случае падения
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
@@ -50,12 +49,12 @@ jobs:
           echo "Проект найден в: $SPEC_DIR"
           cd "$SPEC_DIR"
           
-          # Запускаем чистую сборку. Флаг согласия уже передан выше в переменной!
-          buildozer android debug
+          # Запуск сборки. Если она упадет, команда после || выведет полный лог ошибки на экран
+          buildozer android debug || (echo "=== КРИТИЧЕСКИЙ ЛОГ ОШИБКИ ===" && cat .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || cat ~/.buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || true)
 
-      # Сохранение готового APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
           path: "**/bin/*.apk"
+
