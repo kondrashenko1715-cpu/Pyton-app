@@ -28,29 +28,44 @@ jobs:
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade buildozer cython virtualenv
 
-      - name: Cache Buildozer
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.buildozer
-            test_app/.buildozer
-          key: buildozer-android-v12-${{ github.sha }}
-          restore-keys: |
-            buildozer-android-v12-
-
-      # ИСПРАВЛЕНИЕ: Перенаправляем лог во временный файл и выводим его в консоль при ошибке
       - name: Build with Buildozer
         run: |
           cd test_app
           export PATH=$PATH:$HOME/.local/bin
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
-          
-          # Запускаем сборку и пишем лог в файл, чтобы обойти обрезку экрана на GitHub
-          buildozer android debug > buildozer_output.log 2>&1 || (echo "=== НАСТОЯЩИЙ ЛОГ ОШИБКИ ===" && tail -n 50 buildozer_output.log && exit 1)
+          buildozer android debug
 
+      # ТО САМОЕ ИСПРАВЛЕНИЕ: Умный поиск файла до 50 раз
+      - name: Smart APK Search Loop
+        run: |
+          echo "Запуск интеллектуального поиска APK..."
+          FOUND=false
+          
+          # Цикл повторится ровно 50 раз
+          for i in {1..50}
+          do
+            echo "Попытка $i из 50: сканирование сервера на наличие .apk..."
+            
+            # Ищем любой файл .apk на всем диске и копируем в корень под именем game.apk
+            if sudo find / -name "*.apk" -exec cp {} ./game.apk \; 2>/dev/null && [ -f ./game.apk ]; then
+              echo "УРА! Файл игры успешно найден и скопирован!"
+              FOUND=true
+              break # Прерываем цикл, дальше искать не нужно!
+            fi
+            
+            echo "Файл пока не появился. Ждем 10 секунд перед следующей проверкой..."
+            sleep 10
+          done
+          
+          if [ "$FOUND" = false ]; then
+            echo "ОШИБКА: За 50 попыток Buildozer так и не создал APK файл."
+            exit 1
+          fi
+
+      # Этот шаг сработает только если цикл выше успешно нашел файл
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: "test_app/**/*.apk"
+          path: game.apk
