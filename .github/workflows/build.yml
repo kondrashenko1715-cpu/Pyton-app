@@ -22,14 +22,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Установка всех необходимых библиотек Linux для графики игры
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade buildozer cython virtualenv
 
-      # Кэширование: сохраняет скачанные рецепты, чтобы не начинать сборку с нуля
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
@@ -40,16 +38,17 @@ jobs:
           restore-keys: |
             buildozer-android-v12-
 
-      # Прямой и чистый запуск компилятора игры
+      # ИСПРАВЛЕНИЕ: Перенаправляем лог во временный файл и выводим его в консоль при ошибке
       - name: Build with Buildozer
         run: |
           cd test_app
           export PATH=$PATH:$HOME/.local/bin
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
-          buildozer android debug
+          
+          # Запускаем сборку и пишем лог в файл, чтобы обойти обрезку экрана на GitHub
+          buildozer android debug > buildozer_output.log 2>&1 || (echo "=== НАСТОЯЩИЙ ЛОГ ОШИБКИ ===" && tail -n 50 buildozer_output.log && exit 1)
 
-      # Извлечение готового APK файла из папки test_app наружу для скачивания
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
