@@ -1,7 +1,9 @@
 [app]
 title = Minecraft Mobile
 package.name = minecraftmobile
-package.domain = org.test
+# ИСПРАВЛЕНИЕ: изменили тестовый org.test на уникальное имя, чтобы сборщик пропустил проект
+package.domain = org.kondrashenko
+
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
@@ -11,7 +13,6 @@ requirements = python3, pygame
 orientation = landscape
 fullscreen = 1
 
-# ФИКСИРУЕМ СТАБИЛЬНЫЕ ВЕРСИИ, ЧТОБЫ ОН НЕ СКАЧИВАЛ BUILD-TOOLS 37
 android.api = 33
 android.build_tools = 34.0.0
 
