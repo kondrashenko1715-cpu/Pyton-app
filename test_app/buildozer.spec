@@ -6,7 +6,6 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# ВАЖНО: Тот самый чистый pygame вместо bootstrap для стабильной сборки
 requirements = python3, pygame
 
 orientation = landscape
