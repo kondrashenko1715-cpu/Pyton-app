@@ -12,9 +12,12 @@ android.bootstrap = sdl2
 orientation = landscape
 fullscreen = 1
 
-# ФИКСИРУЕМ СТАБИЛЬНЫЕ ВЕРСИИ ДЛЯ СБОРЩИКА
+# ФИКСИРУЕМ ВЕРСИИ (Для старых и новых версий Buildozer одновременно)
 android.api = 33
 android.build_tools = 34.0.0
+android.ndk = 25b
+android.ndk_version = 25b
+android.ndk_api = 21
 
 android.archs = arm64-v8a
 android.allow_backup = True
