@@ -11,22 +11,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # Обновляем JDK до 21 для совместимости с NDK r28c
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
+      # Обновляем Python до 3.11
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
-          pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
+          pip install --user --upgrade buildozer cython virtualenv
 
       - name: Build with Buildozer
         run: |
@@ -35,9 +37,10 @@ jobs:
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           
-          # ИСПРАВЛЕНИЕ: Никаких очисток. Только прямая, чистая сборка
-          buildozer android debug
+          # Запуск сборки. Если упадет — команда после || распечатает скрытый лог ошибки!
+          buildozer android debug || (echo "=== КРИТИЧЕСКИЙ ЛОГ ОШИБКИ ===" && tail -n 150 .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || tail -n 150 ~/.buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || true)
 
+      # Универсальный поиск заберет готовый APK из любой папки
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
