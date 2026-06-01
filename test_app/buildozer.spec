@@ -6,13 +6,14 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# ВАЖНО: Только python3 и чистый pygame. Современный Buildozer сам выберет нужный bootstrap
+# ВАЖНО: указываем pygame и явно прописываем бэкенд sdl2
 requirements = python3, pygame
+android.bootstrap = sdl2
 
 orientation = landscape
 fullscreen = 1
 
-# Собираем под arm64-v8a — это стандарт для 99% современных телефонов
+# Собираем под arm64-v8a
 android.archs = arm64-v8a
 android.allow_backup = True
 android.accept_sdk_license = True
