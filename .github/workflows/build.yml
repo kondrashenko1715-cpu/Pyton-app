@@ -11,29 +11,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # ИСПРАВЛЕНИЕ: Ставим Java 21 под требования NDK r28c
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
+      # ИСПРАВЛЕНИЕ: Ставим Python 3.11 для совместимости
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      # Устанавливаем системный 'aidl' прямо в Linux!
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev aidl
-          pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
-
-      # Подменяем sdkmanager, чтобы Buildozer не ругался
-      - name: Fix Android SDK Paths for Buildozer
-        run: |
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin/
-          ln -s $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
+          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+          pip install --user --upgrade buildozer cython virtualenv
 
       - name: Build with Buildozer
         run: |
@@ -44,7 +39,7 @@ jobs:
           
           buildozer android debug
 
-      # Универсальный поиск: вытащит APK из абсолютно любой папки репозитория!
+      # Забираем APK из папки репозитория
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
