@@ -11,14 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ИСПРАВЛЕНИЕ: Ставим Java 21 под требования NDK r28c
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      # ИСПРАВЛЕНИЕ: Ставим Python 3.11 для совместимости
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -37,9 +35,9 @@ jobs:
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           
-          buildozer android debug
+          # УЛУЧШЕНИЕ: если сборка упадет, скрипт вырежет из логов только строки с ошибками Gradle/Java
+          buildozer android debug || (echo "=== ТОЧНАЯ ПРИЧИНА ПАДЕНИЯ ===" && grep -i -C 5 "error" .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || grep -i -C 5 "failed" .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null || tail -n 100 .buildozer/android/platform/build-arm64-v8a/dists/*/.buildozer_log 2>/dev/null)
 
-      # Забираем APK из папки репозитория
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
