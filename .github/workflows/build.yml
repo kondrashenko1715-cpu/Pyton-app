@@ -19,14 +19,13 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libmpdec-dev libexpat1-dev
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
           pip install --user --upgrade buildozer cython virtualenv
 
       - name: Build with Buildozer
         run: |
           cd test_app
           export PATH=$PATH:$HOME/.local/bin
-          # Автоматически принимаем лицензии Android SDK и запускаем сборку
           yes | buildozer android debug
 
       - name: Upload APK
