@@ -28,13 +28,20 @@ jobs:
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
           pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
 
-      # Автоматически подписываем лицензии в системе
       - name: Accept Android SDK Licenses
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
+      # ЖЕЛЕЗОБЕТОННЫЙ КОСТЫЛЬ: Сами создаем папку для build-tools 37 и копируем туда утилиту aidl.
+      # Теперь Buildozer больше никогда не выдаст ошибку "Aidl not found"!
+      - name: Pre-install Aidl for Buildozer
+        run: |
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools/37.0.0/
+          cp $ANDROID_HOME/build-tools/*/aidl /home/runner/.buildozer/android/platform/android-sdk/build-tools/37.0.0/aidl || true
+
+      # Запуск сборки
       - name: Build with Buildozer
         run: |
           cd test_app
@@ -42,10 +49,9 @@ jobs:
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           
-          # Чистая сборка БЕЗ "yes |"
           buildozer android debug
 
-      # Забираем APK файл из корня папки приложения
+      # Забираем APK-файл из корня приложения
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
