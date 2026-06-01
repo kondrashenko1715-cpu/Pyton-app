@@ -22,18 +22,17 @@ jobs:
         with:
           python-version: '3.10'
 
+      # ИСПРАВЛЕНИЕ: Добавлен полный набор пакетов SDL2 для компиляции Pygame
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
+          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
 
-      # ТО САМОЕ ИСПРАВЛЕНИЕ: Автоматически подписываем соглашения через встроенный менеджер Android
       - name: Accept Android SDK Licenses
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          # Находим встроенный в Ubuntu sdkmanager и вбиваем во все лицензии "yes"
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build with Buildozer
