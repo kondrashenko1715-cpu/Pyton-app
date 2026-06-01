@@ -28,16 +28,21 @@ jobs:
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
           pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
 
+      # ТО САМОЕ ИСПРАВЛЕНИЕ: Автоматически подписываем соглашения через встроенный менеджер Android
+      - name: Accept Android SDK Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          # Находим встроенный в Ubuntu sdkmanager и вбиваем во все лицензии "yes"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Build with Buildozer
         run: |
           cd test_app
           export PATH=$PATH:$HOME/.local/bin
-          
-          # СУПЕР-ФЛАГ: Автоматически принимает вообще ВСЕ лицензии Android (даже новые Build-Tools 37)
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           
-          # Запускаем сборку. Сама команда теперь не прервется вопросами!
           buildozer android debug
 
       - name: Upload APK
