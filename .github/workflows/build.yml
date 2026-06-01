@@ -17,20 +17,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Жестко ставим Python 3.10 для совместимости с Buildozer
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      # Установка системных утилит Linux и правильной ветки Cython
+      # Устанавливаем актуальные версии инструментов без искусственных ограничений
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
-          pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0.0" virtualenv
+          pip install --user --upgrade buildozer cython virtualenv
 
-      # Кэширование: сохраняет Android SDK, чтобы сборка не длилась вечно
+      # Кэширование для ускорения повторных запусков
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
@@ -41,15 +40,16 @@ jobs:
           restore-keys: |
             buildozer-ubuntu-
 
-      # Запуск сборки с принудительным принятием лицензий Google
+      # Сборка приложения с автоматическим принятием лицензий
       - name: Build with Buildozer
         run: |
           cd test_app
           export PATH=$PATH:$HOME/.local/bin
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
+          buildozer android clean
           yes | buildozer android debug
 
-      # Сохранение готового APK-файла, который можно будет скачать
+      # Выгрузка готового APK файла в артефакты GitHub
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
