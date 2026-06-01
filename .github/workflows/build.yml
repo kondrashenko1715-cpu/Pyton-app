@@ -11,19 +11,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # Этот готовый инструмент сам установит Buildozer и правильно подпишет лицензии Google
-      - name: Build APK with Buildozer
-        uses: Artemonim/buildozer-action@v1
-        with:
-          command: buildozer android debug
-          repository_root: test_app
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev
+          pip install --user --upgrade "buildozer>=1.5.0" cython virtualenv
 
-      # Вытаскиваем готовый APK наружу
+      # ЖЕЛЕЗОБЕТОННЫЙ СПОСОБ ПРИНЯТЬ ЛИЦЕНЗИИ:
+      # Мы берем готовую строку лицензии Google и молча сохраняем ее в системную папку.
+      # Теперь ни одна утилита на сервере больше вообще не спросит "Вы согласны?"
+      - name: Auto Accept SDK Licenses
+        run: |
+          mkdir -p ~/.android/
+          echo -e "\n244d24d21d31b1e53b1de17f46c7d35b47872095" > ~/.android/repositories.cfg
+          mkdir -p /usr/local/lib/android/sdk/licenses/ || true
+          echo -e "\n8933bad161ad4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb74373025235d66d866\n2430ae38b54dd1dae213b1b6bb333d0d8541217a\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910\n351325c33f410d3419f1a02b9914bc4d396e7414" > /usr/local/lib/android/sdk/licenses/android-sdk-license || true
+
+      - name: Build with Buildozer
+        run: |
+          cd test_app
+          export PATH=$PATH:$HOME/.local/bin
+          # Чистый запуск без флагов и без "yes |". Лицензии уже лежат где надо!
+          buildozer android debug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
