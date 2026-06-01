@@ -32,9 +32,9 @@ jobs:
         run: |
           cd test_app
           export PATH=$PATH:$HOME/.local/bin
-          yes | buildozer android debug
+          # ИСПРАВЛЕНИЕ: запускаем сборку напрямую, без 'yes |'
+          buildozer android debug
 
-      # ТО САМОЕ ИСПРАВЛЕНИЕ: Мы заменили последнюю строчку на правильный поиск без вертикальных черточек
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
