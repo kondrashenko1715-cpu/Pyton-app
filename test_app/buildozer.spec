@@ -6,12 +6,17 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# ВАЖНО: указываем pygame и явно прописываем бэкенд sdl2
+# ВАЖНО: используем чистый pygame и бэкенд sdl2
 requirements = python3, pygame
 android.bootstrap = sdl2
 
 orientation = landscape
 fullscreen = 1
+
+# ФИКСИРУЕМ ВЕРСИИ ДЛЯ СТАБИЛЬНОСТИ
+android.api = 33
+android.ndk = 25b
+android.ndk_api = 21
 
 # Собираем под arm64-v8a
 android.archs = arm64-v8a
