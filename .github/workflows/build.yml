@@ -26,7 +26,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
-          # ЖЕСТКИЙ ФИКС ВЕРСИИ СБОРЩИКА: ставим стабильный 1.5.0, чтобы убрать скачивание python 3.14
           pip install --user --upgrade "buildozer==1.5.0" "cython<3.0.0" virtualenv
 
       - name: Build with Buildozer
@@ -35,5 +34,16 @@ jobs:
           export PATH=$PATH:$HOME/.local/bin
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
-          
           buildozer android debug
+
+      # ТОЧНЫЙ ШАГ: Копируем созданный APK наружу
+      - name: Prepare APK Artifact
+        run: |
+          cp test_app/bin/*.apk ./game.apk
+
+      # ТОЧНЫЙ ШАГ: Добавляем секцию для скачивания файла на сайте
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MinecraftMobile-APK
+          path: game.apk
