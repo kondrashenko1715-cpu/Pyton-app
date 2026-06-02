@@ -17,7 +17,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Переключаем на стабильный Python 3.10 (без багов кэша hostedtoolcache)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -27,9 +26,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
-          pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0.0" virtualenv
+          # ЖЕСТКИЙ ФИКС ВЕРСИИ СБОРЩИКА: ставим стабильный 1.5.0, чтобы убрать скачивание python 3.14
+          pip install --user --upgrade "buildozer==1.5.0" "cython<3.0.0" virtualenv
 
-      # Безопасный запуск без ломающих команд очистки
       - name: Build with Buildozer
         run: |
           cd test_app
@@ -37,6 +36,4 @@ jobs:
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           
-          # Запускаем прямую сборку
           buildozer android debug
-
