@@ -1,80 +1,89 @@
-import pygame
+from kivy.app import App
+from kivy.uix.graphics import RenderContext
+from kivy.uix.widget import Widget
+from kivy.core.window import Window
+from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle, Line
 import random
 
-pygame.init()
+# Задаем ландшафтную ориентацию для тестов на ПК
+Window.size = (800, 480)
 
-info = pygame.display.Info()
-WIDTH, HEIGHT = info.current_w, info.current_h
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+class GameWidget(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.block_size = 40
+        self.world = {}
+        
+        # Цвета (RGB от 0.0 до 1.0)
+        self.colors = {
+            'grass': (34/255, 139/255, 34/255),
+            'dirt': (139/255, 69/255, 19/255),
+            'stone': (128/255, 128/255, 128/255),
+            'deepslate': (64/255, 64/255, 64/255),
+            'ore': (255/255, 215/255, 0),
+            'bedrock': (0, 0, 0),
+            'sky': (135/255, 206/255, 235/255)
+        }
+        
+        # Ждем реальных размеров экрана устройства
+        Clock.schedule_once(self.init_world, 0.1)
 
-pygame.display.set_caption("Minecraft Mobile (Thin Bedrock)")
-clock = pygame.time.Clock()
+    def init_world(self, dt):
+        self.cols = int(self.width // self.block_size) + 1
+        self.rows = int(self.height // self.block_size) + 1
+        surface_height = self.rows // 4
 
-GRASS = (34, 139, 34)
-DIRT = (139, 69, 19)
-STONE = (128, 128, 128)
-DEEPSLATE = (64, 64, 64)
-ORE = (255, 215, 0)
-BEDROCK = (0, 0, 0)
-SKY = (135, 206, 235)
+        for x in range(self.cols):
+            for y in range(self.rows):
+                # Координаты инвертированы для привычного рисования сверху вниз
+                inv_y = self.rows - 1 - y
+                if inv_y < surface_height:
+                    self.world[(x, y)] = None
+                elif inv_y == surface_height:
+                    self.world[(x, y)] = 'grass'
+                elif inv_y < surface_height + 3:
+                    self.world[(x, y)] = 'dirt'
+                elif inv_y < surface_height + 15:
+                    self.world[(x, y)] = 'ore' if random.random() < 0.1 else 'stone'
+                elif inv_y < self.rows - 2:
+                    self.world[(x, y)] = 'ore' if random.random() < 0.15 else 'deepslate'
+                else:
+                    self.world[(x, y)] = 'bedrock'
+        self.redraw()
 
-BLOCK_SIZE = 40
-WORLD_WIDTH = WIDTH // BLOCK_SIZE
-WORLD_HEIGHT = HEIGHT // BLOCK_SIZE
-
-world = [[None for _ in range(WORLD_HEIGHT)] for _ in range(WORLD_WIDTH)]
-
-SURFACE_HEIGHT = WORLD_HEIGHT // 4
-
-for x in range(WORLD_WIDTH):
-    for y in range(WORLD_HEIGHT):
-        if y < SURFACE_HEIGHT:
-            world[x][y] = None
-        elif y == SURFACE_HEIGHT:
-            world[x][y] = GRASS
-        elif y < SURFACE_HEIGHT + 3:
-            world[x][y] = DIRT
-        elif y < SURFACE_HEIGHT + 15:
-            if random.random() < 0.1:
-                world[x][y] = ORE
-            else:
-                world[x][y] = STONE
-        elif y < WORLD_HEIGHT - 2:
-            if random.random() < 0.15:
-                world[x][y] = ORE
-            else:
-                world[x][y] = DEEPSLATE
-        else:
-            world[x][y] = BEDROCK
-
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = event.pos
-            block_x = mouse_x // BLOCK_SIZE
-            block_y = mouse_y // BLOCK_SIZE
+    def redraw(self):
+        self.canvas.clear()
+        with self.canvas:
+            # Рисуем небо
+            Color(*self.colors['sky'])
+            Rectangle(pos=self.pos, size=self.size)
             
-            if (0 <= block_x < WORLD_WIDTH and 
-                0 <= block_y < WORLD_HEIGHT and 
-                world[block_x][block_y] != BEDROCK):
-                world[block_x][block_y] = None
+            # Рисуем блоки
+            for (x, y), block_type in self.world.items():
+                if block_type:
+                    Color(*self.colors[block_type])
+                    pos_x = x * self.block_size
+                    pos_y = y * self.block_size
+                    Rectangle(pos=(pos_x, pos_y), size=(self.block_size, self.block_size))
+                    # Сетка
+                    Color(50/255, 50/255, 50/255, 0.5)
+                    Line(rectangle=(pos_x, pos_y, self.block_size, self.block_size), width=1)
 
-    screen.fill(SKY)
-    for x in range(WORLD_WIDTH):
-        for y in range(WORLD_HEIGHT):
-            block = world[x][y]
-            if block is not None:
-                rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
-                pygame.draw.rect(screen, block, rect)
-                pygame.draw.rect(screen, (50, 50, 50), rect, 1)
+    def on_touch_down(self, touch):
+        # Определение блока по нажатию пальца (работает и мышь, и тач)
+        block_x = int(touch.x // self.block_size)
+        block_y = int(touch.y // self.block_size)
+        
+        if (block_x, block_y) in self.world:
+            if self.world[(block_x, block_y)] != 'bedrock':
+                self.world[(block_x, block_y)] = None
+                self.redraw()
+        return True
 
-    pygame.display.flip()
-    clock.tick(30)
+class MinecraftMobileApp(App):
+    def build(self):
+        return GameWidget()
 
-pygame.quit()
+if __name__ == '__main__':
+    MinecraftMobileApp().run()
