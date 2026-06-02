@@ -6,13 +6,13 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-requirements = python3, pygame
-android.bootstrap = sdl2
+# ВАЖНО: строго английские буквы, добавлен pyjnius
+requirements = python3==3.10.12, pygame==2.5.2, pyjnius
 
+android.bootstrap = sdl2
 orientation = landscape
 fullscreen = 1
 
-# ЖЕСТКИЙ ФИКС ВЕРСИЙ ДЛЯ ИСКЛЮЧЕНИЯ ОШИБОК
 android.api = 33
 android.build_tools = 34.0.0
 android.ndk = 25b
