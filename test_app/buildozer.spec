@@ -6,16 +6,17 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# Чистый набор требований для стабильного подбора версий
+# Фикс: Чистый набор требований без жестких версий
 requirements = python3, pygame, pyjnius
 
 android.bootstrap = sdl2
 orientation = landscape
 fullscreen = 1
 
-# Позволяем Buildozer самому скачать нужный и совместимый NDK r25b
+# ЖЕСТКИЙ ФИКС СТАБИЛЬНЫХ ВЕРСИЙ ANDROID SDK И NDK
 android.api = 33
 android.build_tools = 34.0.0
+android.ndk = 25b
 android.ndk_api = 21
 
 android.archs = arm64-v8a
