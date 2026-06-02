@@ -11,24 +11,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Ставим стабильную Java 17 для работы с NDK r25b
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Ставим проверенный Python 3.10
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
+       Tarifa- name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0.0" virtualenv
+
+      - name: Cache Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            test_app/.buildozer
+          key: buildozer-android-v12-${{ github.sha }}
+          restore-keys: |
+            buildozer-android-v12-
 
       - name: Build with Buildozer
         run: |
@@ -38,29 +46,12 @@ jobs:
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           buildozer android debug
 
-      # Наш умный цикл поиска APK
-      - name: Smart APK Search Loop
+      - name: Prepare APK Artifact
         run: |
-          echo "Запуск интеллектуального поиска APK..."
-          FOUND=false
-          for i in {1..50}
-          do
-            echo "Попытка $i из 50: сканирование сервера на наличие .apk..."
-            if sudo find / -name "*.apk" -exec cp {} ./game.apk \; 2>/dev/null && [ -f ./game.apk ]; then
-              echo "УРА! Файл игры успешно найден и скопирован!"
-              FOUND=true
-              break
-            fi
-            echo "Файл пока не появился. Ждем 10 секунд..."
-            sleep 10
-          done
-          if [ "$FOUND" = false ]; then
-            echo "ОШИБКА: За 50 попыток Buildozer так и не создал APK файл."
-            exit 1
-          fi
+          cp test_app/bin/*.apk ./game.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: MinecraftMobile-APK
           path: game.apk
