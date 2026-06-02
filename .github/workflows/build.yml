@@ -28,6 +28,13 @@ jobs:
           sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libssl-dev libsqlite3-dev libffi-dev libexpat1-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
           pip install --user --upgrade "buildozer>=1.5.0" "cython<3.0.0" virtualenv
 
+      # КРИТИЧЕСКИ ВАЖНЫЙ ФИКС: Удаляем скрытый кэш старой сломанной сборки
+      - name: Clean hidden buildozer folders
+        run: |
+          rm -rf ~/.buildozer
+          rm -rf test_app/.buildozer
+          rm -rf test_app/bin
+
       - name: Build with Buildozer
         run: |
           cd test_app
@@ -35,5 +42,6 @@ jobs:
           export BUILDOZER_ALLOW_ORG_TEST_DOMAIN="1"
           export APP_ANDROID_ACCEPT_SDK_LICENSE="1"
           
-          # ЖЕСТКИЙ ФИКС: Принудительно заставляем компилятор использовать Python 3.11 вместо 3.14
+          # Очищаем внутренний кэш p4a и запускаем сборку начисто
+          buildozer android clean
           buildozer android debug
