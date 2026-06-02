@@ -6,8 +6,8 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# Фикс: Чистый набор требований без жестких версий
-requirements = python3, pygame, pyjnius
+# Фикс: добавляем kivy и pyjnius
+requirements = python3, pygame, kivy, pyjnius
 
 android.bootstrap = sdl2
 orientation = landscape
