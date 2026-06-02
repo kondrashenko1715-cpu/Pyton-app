@@ -7,7 +7,7 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # Фикс версий: принудительно собираем на стабильном Python 3.11 без Pygame
-requirements = python3==3.11.1, kivy, pyjnius
+requirements = python3, kivy, pyjnius
 
 orientation = landscape
 fullscreen = 1
