@@ -6,14 +6,17 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
-# Фикс: добавляем kivy и pyjnius
-requirements = python3, pygame, kivy, pyjnius
+# Требования для стабильного подбора версий
+requirements = python3, pygame, pyjnius
 
 android.bootstrap = sdl2
 orientation = landscape
 fullscreen = 1
 
-# ЖЕСТКИЙ ФИКС СТАБИЛЬНЫХ ВЕРСИЙ ANDROID SDK И NDK
+# ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ СБОРЩИКА (ВАЖНЫЙ ФИКС БАГА PYGAME)
+p4a.branch = develop
+
+# Стабильные версии Android
 android.api = 33
 android.build_tools = 34.0.0
 android.ndk = 25b
